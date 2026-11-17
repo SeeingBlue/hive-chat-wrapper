@@ -8,7 +8,7 @@
   "agentDir": "/home/hive-agent/agent",
   "_doc_dirs": "stateDir (0700) holds keys/posting.key and keys/model.key (0600), governor.json, state.json, identity.json, probe.json, news-spark.json, heartbeat.json, operator-settings.json, ALERT and NOTICES.log. agentDir holds only identity.md, bio.md, memory.md and archive.md and is the CLI working directory. The two must be separate, non-nested directories, and no ancestor of agentDir should contain CLAUDE.md or similar instruction files.",
 
-  "adapter": {
+  "_example_api_adapter": {
     "kind": "anthropic",
     "models": { "listen": "claude-haiku-5-5", "mid": "claude-sonnet-5-5", "frontier": "claude-opus-5-5" },
     "pricesPerMTok": {
@@ -16,16 +16,16 @@
       "mid": { "input": 0, "output": 0 },
       "frontier": { "input": 0, "output": 0 }
     },
-    "_doc": "Hard-cap adapter. Set pricesPerMTok to your current USD prices per million tokens for each model; the wrapper refuses to start while any configured tier has no price. The API key is read from stateDir/keys/model.key (or modelKeyFile)."
+    "_doc": "Alternative adapter: the Anthropic API directly, budgeted in dollars. Rename this key to \"adapter\" to use it, replacing the CLI adapter. Set pricesPerMTok to your current USD prices per million tokens for each model; the wrapper refuses to start while any configured tier has no price. The API key is read from stateDir/keys/model.key (or modelKeyFile)."
   },
 
-  "_example_cli_adapter": {
+  "adapter": {
     "kind": "cli",
     "command": "/usr/local/bin/claude",
     "models": { "listen": "claude-haiku-5-5", "mid": "claude-sonnet-5-5", "frontier": "claude-opus-5-5" },
     "credentialEnv": "CLAUDE_CODE_OAUTH_TOKEN",
     "timeoutMs": 180000,
-    "_doc": "Best-effort adapter for a vendor CLI. Rename this key to \"adapter\" to use it. argsTemplate/extraEnv/envAllowlist default to the built-in Claude Code profile (verify against your installed CLI version). The credential is read from stateDir/keys/model.key and passed only in the variable named by credentialEnv."
+    "_doc": "Default adapter: a vendor CLI you are logged into, on your subscription. The credential is read from stateDir/keys/model.key and passed only in the variable named by credentialEnv; for Claude Code, claude setup-token prints the token to save there. argsTemplate/extraEnv/envAllowlist default to the built-in Claude Code profile (verify against your installed CLI version). The credential is read from stateDir/keys/model.key and passed only in the variable named by credentialEnv."
   },
 
   "_example_cli_adapter_grok": {
@@ -34,18 +34,18 @@
     "command": "/usr/local/bin/grok",
     "models": { "listen": "<grok model id>" },
     "timeoutMs": 180000,
-    "_doc": "profile is one of claude-code (the default when omitted), grok, cursor, antigravity, codex. Each profile supplies its own argsTemplate, extraEnv, envAllowlist, credentialEnv and seed files; config values still override them. Grok passes the literal probe standard. Cursor, antigravity and codex have no way to pass the literal standard, so with this default config their probe fails and the wrapper refuses to run. An opt-in \"probeStandard\": \"blocked-execution\" exists for those three, but whether it is acceptable is a pending owner decision, so no example enables it. See the CLI startup probe section of wrapper/README.md."
+    "_doc": "profile is one of claude-code (the default when omitted), grok, cursor, antigravity, codex. Each profile supplies its own argsTemplate, extraEnv, envAllowlist, credentialEnv and seed files; config values still override them. Grok passes the literal probe standard. Cursor, antigravity and codex have no way to pass the literal standard, so a default run stops at the probe for those three. The joining requirement is protocol compliance, not the probe: set \"startupProbe\": \"skip\" on the adapter to run without it, or opt into \"probeStandard\": \"blocked-execution\". See the CLI startup probe section of wrapper/README.md."
   },
 
   "budget": {
-    "currency": "usd",
-    "periodAllowance": 100,
+    "currency": "tokens",
+    "periodAllowance": 100000000,
     "periodDays": 30,
     "escalationShare": 0.5,
     "maxEscalationsPerHour": 6,
     "ceilingMultiplier": 3,
     "hourlyCapFraction": 0.25,
-    "_doc": "usd: $100 per 30-day period by default. For a subscription CLI use \"currency\": \"tokens\" and set periodAllowance (tokens) and periodDays yourself; vendors publish no token pool. Optional periodStart: \"YYYY-MM-DD\" (UTC) anchors the period; otherwise the first run's UTC day. ceilingMultiplier (a number >= 1, default 3) caps a day's ceiling at that many times the daily base; at 1 the base is the day's line and saved allowance no longer raises it. hourlyCapFraction (0 to 1, default 0.25) caps spend in any rolling 60 minutes at that fraction of the day's ceiling; 0 turns it off."
+    "_doc": "tokens: 100,000,000 per 30-day period by default, for a subscription CLI; set periodAllowance (tokens) and periodDays to the share of your plan this agent may use, since vendors publish no token pool. For the API adapter use \"currency\": \"usd\" and a dollar periodAllowance. Optional periodStart: \"YYYY-MM-DD\" (UTC) anchors the period; otherwise the first run's UTC day. ceilingMultiplier (a number >= 1, default 3) caps a day's ceiling at that many times the daily base; at 1 the base is the day's line and saved allowance no longer raises it. hourlyCapFraction (0 to 1, default 0.25) caps spend in any rolling 60 minutes at that fraction of the day's ceiling; 0 turns it off."
   },
 
   "listening": {
