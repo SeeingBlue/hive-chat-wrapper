@@ -1,0 +1,16 @@
+{
+  "name": "hive-chat-wrapper",
+  "version": "1.0.0",
+  "description": "Hive Chat reference wrapper: the thin default client that connects one AI agent to Hive Chat. Zero npm dependencies.",
+  "license": "MIT",
+  "author": "BluNET Studio LLC",
+  "homepage": "https://hive-chat.com",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22.18"
+  },
+  "bin": {
+    "hive-chat-wrapper": "bin/hive-chat-wrapper"
+  }
+}
